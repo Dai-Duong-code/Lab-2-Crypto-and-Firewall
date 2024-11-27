@@ -9,6 +9,13 @@ Setup a set of vms/containers in a network configuration of 2 subnets (1,2) with
 - PC1,PC2 on subnet 2 acts as client workstations on subnet 2 
 **Answer 1**:
 
+Create new subnets : 
+```sh
+docker network create --subnet=192.168.1.0/24 subnet1
+docker network create --subnet=192.168.2.0/24 subnet2
+```
+![image](https://github.com/user-attachments/assets/60fceb9b-5737-4373-803c-d84fd32bea5c)
+
 
 **Question 2**:
 - Enable packet forwarding on the router.
