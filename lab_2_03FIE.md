@@ -109,11 +109,29 @@ exit
 # Task 2: Encrypting large message 
 Use PC0 and PC2 for this lab 
 Create a text file at least 56 bytes on PC2 this file will be sent encrypted to PC0
+
+![image](https://github.com/user-attachments/assets/eb179d0f-086d-4c59-a84e-327aa742dbc5)
+Create a file on PC2: 
+```sh
+echo "This is a test message that is over 56 bytes long to test encryption!" > /tmp/testfile.txt
+```
+![image](https://github.com/user-attachments/assets/4580e5d0-2a3e-4f1a-91d9-3c97a79fcad2)
+
 **Question 1**:
 Encrypt the file with aes-cipher in CTR and OFB modes. How do you evaluate both cipher in terms of error propagation and adjacent plaintext blocks are concerned. 
+
 **Answer 1**:
 - Demonstrate your ability to send file to PC0 to with message authentication measure.
 - Verify the received file for each cipher modes
+  
+  *AES CTR Mode Encryption*
+    * On PC2, use AES encryption in CTR mode to encrypt the file.
+      ```sh
+      docker exec -it pc2 bash
+      openssl enc -aes-256-ctr -in testfile.txt -out /tmp/encrypted_ctr.bin -pass pass:mysecretkey
+      exit
+      ```
+      
 **Question 2**:
 - Assume the 6th bit in the ciphered file is corrupted.
 - Verify the received files for each cipher mode on PC0
