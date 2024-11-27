@@ -92,6 +92,7 @@ exit
 **Question 4**:
 - PC1 now servers as a UDP server, make sure that it can reply UDP ping from other hosts on both subnets.
 - Config personal firewall on PC1 to block UDP accesses from PC2 while leaving UDP access from the server intact.
+  
 **Answer 4**:
 Make PC1 a UDP Server: Start a simple UDP server on PC1:
 ```sh
@@ -131,18 +132,68 @@ Encrypt the file with aes-cipher in CTR and OFB modes. How do you evaluate both 
       openssl enc -aes-256-ctr -in testfile.txt -out /tmp/encrypted_ctr.bin -pass pass:mysecretkey
       exit
       ```
-      
+  *AES OFB Mode Encryption*
+     * On PC2, encrypt the file in AES-OFB mode
+       ```sh docker exec -it pc2 bash
+          openssl enc -aes-256-ofb -in /tmp/testfile.txt -out /tmp/encrypted_ofb.bin -pass pass:mysecretkey
+          exit
+       ```
+       ![image](https://github.com/user-attachments/assets/ad968bb0-4276-4326-ae17-1c0e16a923f4)
+       ![image](https://github.com/user-attachments/assets/9d1881a3-4825-48d3-8262-2238cda1596c)
+  *Message Authentication:*
+    ```sh
+    docker exec -it pc2 bash
+    openssl dgst -sha256 -mac HMAC -macopt key:mysecretkey /tmp/testfile.txt
+    exit
+    ```
+    ![image](https://github.com/user-attachments/assets/99778b7c-61ff-4d7c-ab27-de4200f5dd1e)
+
+    Send the encrypted file along with the HMAC to PC0: Use netcat
+    ```sh
+    cat /tmp/encrypted_ctr.bin | nc 192.168.1.2 12345
+    ```
+    Receive and Verify the File on PC0:
+    ```sh
+    nc -l -p 12345 > /tmp/encrypted_ctr_received.bin
+    openssl dgst -sha256 -mac HMAC -macopt key:mysecretkey /tmp/encrypted_ctr_received.bin
+    ```
+
 **Question 2**:
 - Assume the 6th bit in the ciphered file is corrupted.
 - Verify the received files for each cipher mode on PC0
 
 **Answer 2**:
-
+Corrupt the Cipher Text: On PC0, manually corrupt the 6th bit of the encrypted file.
+```sh
+docker exec -it pc0 bash
+xxd -p /tmp/encrypted_ctr_received.bin | sed 's/\(..\)\(..\)\(..\)/\1\3\2/' | xxd -r -p > /tmp/encrypted_ctr_corrupted.bin
+exit
+```
+Verify the Corrupted File 
+```sh
+openssl enc -d -aes-256-ctr -in /tmp/encrypted_ctr_corrupted.bin -out /tmp/decrypted_ctr_corrupted.txt -pass pass:mysecretkey
+```
 **Question 3**:
 - Decrypt corrupted files on PC0.
-- Comment on both ciphers in terms of error propagation and adjacent plaintext blocks criteria. 
+- Comment on both ciphers in terms of error propagation and adjacent plaintext blocks criteria.
+  
+**Answer 3**:
+Decrypt the Corrupted Files: 
+```sh
+# Decrypt corrupted file in AES-CTR mode
+docker exec -it pc0 bash
+openssl enc -d -aes-256-ctr -in /tmp/encrypted_ctr_corrupted.bin -out /tmp/decrypted_ctr_corrupted.txt -pass pass:mysecretkey
+exit
 
+# Decrypt corrupted file in AES-OFB mode
+docker exec -it pc0 bash
+openssl enc -d -aes-256-ofb -in /tmp/encrypted_ofb_corrupted.bin -out /tmp/decrypted_ofb_corrupted.txt -pass pass:mysecretkey
+exit
 
+```
+Final Comments:
+- CTR Mode: This mode offers better error containment because any corruption that occurs in one block will only affect that specific block. The rest of the data remains unaffected, as errors do not propagate to adjacent blocks.
+- OFB Mode: In contrast, errors in OFB mode can have a wider impact. A single corrupted bit in the ciphertext will affect the corresponding decrypted bit, and this error will spread across all subsequent blocks, affecting the entire decryption sequence until the error is corrected.
 
 
 
