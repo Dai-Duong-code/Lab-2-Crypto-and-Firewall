@@ -15,7 +15,17 @@ docker network create --subnet=192.168.1.0/24 subnet1
 docker network create --subnet=192.168.2.0/24 subnet2
 ```
 ![image](https://github.com/user-attachments/assets/60fceb9b-5737-4373-803c-d84fd32bea5c)
-
+Create router :
+```sh
+docker run -d --name router --network subnet1 --network subnet2 --cap-add=NET_ADMIN --privileged alpine sleep 3600
+```
+![image](https://github.com/user-attachments/assets/02cbac33-46ff-4749-b047-2ec6a392f1b0)
+Set up IP forwarding and NAT on the router: 
+```sh
+docker exec -it router sh
+echo 1 > /proc/sys/net/ipv4/ip_forward
+iptables --table nat -A POSTROUTING -o eth0 -j MASQUERADE
+```
 
 **Question 2**:
 - Enable packet forwarding on the router.
