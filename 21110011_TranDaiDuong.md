@@ -1,4 +1,4 @@
-# Lab #1,21110011, Tran Dai Duong, INSE331280E_03FIE
+# Lab #2,21110011, Tran Dai Duong, INSE331280E_03FIE
 # Task 1: Encrypt and Decrypt Text file
 
 # Task 1: Firewall configuration 
